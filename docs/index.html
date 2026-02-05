@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RappterHub - The Package Registry for AI Agents</title>
+  <meta name="description" content="npm for AI agents. Search, install, and publish openrappter agents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #a855f7;
+      --purple-dark: #9333ea;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --bg-elevated: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --border: #3f3f46;
+      --gradient: linear-gradient(135deg, var(--purple) 0%, var(--blue) 50%, var(--green) 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 8rem 2rem 6rem;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 span {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--purple);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--purple-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--purple);
+      transform: translateY(-2px);
+    }
+
+    .cta { display: flex; gap: 1rem; justify-content: center; margin-bottom: 4rem; }
+
+    .terminal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #27c93f; }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+    }
+
+    .line { margin-bottom: 0.5rem; }
+    .prompt { color: var(--purple); }
+    .comment { color: var(--text-muted); }
+    .success { color: var(--green); }
+
+    .features {
+      padding: 8rem 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .features h2 {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .feature h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .feature p { color: var(--text-muted); }
+
+    footer {
+      padding: 3rem 2rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    footer a { color: var(--purple); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">📦 RappterHub</a>
+    <div class="nav-links">
+      <a href="https://github.com/kody-w/openrappter">openrappter</a>
+      <a href="https://github.com/rappterhub/rappterhub">GitHub</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>The package registry for <span>AI agents</span></h1>
+      <p>npm for AI agents. Search, install, publish. One command away.</p>
+
+      <div class="cta">
+        <a href="https://github.com/rappterhub/rappterhub" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/kody-w/openrappter" class="btn btn-secondary">Learn openrappter</a>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="terminal-body">
+          <div class="line comment"># Search for agents</div>
+          <div class="line"><span class="prompt">$</span> rappterhub search "git automation"</div>
+          <div class="line comment">Found 12 agents</div>
+          <br>
+          <div class="line comment"># Install one</div>
+          <div class="line"><span class="prompt">$</span> rappterhub install kody-w/git-helper</div>
+          <div class="line success">✓ Installed git-helper v1.2.0</div>
+          <br>
+          <div class="line comment"># Use it</div>
+          <div class="line"><span class="prompt">$</span> openrappter "create a PR for my changes"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <h2>Why RappterHub?</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <h3>🔍 Search</h3>
+        <p>Find agents by keyword, tag, or author. Semantic search across all community agents.</p>
+      </div>
+      <div class="feature">
+        <h3>📥 Install</h3>
+        <p>One command to install. Dependencies handled automatically. Works immediately.</p>
+      </div>
+      <div class="feature">
+        <h3>📤 Publish</h3>
+        <p>Share your agents with the community. Version control and changelog support.</p>
+      </div>
+      <div class="feature">
+        <h3>🔄 Update</h3>
+        <p>Keep agents up to date. Rollback if needed. Lock file for reproducibility.</p>
+      </div>
+      <div class="feature">
+        <h3>🔒 Transparent</h3>
+        <p>GitHub-backed registry. Every agent is code you can read. No black boxes.</p>
+      </div>
+      <div class="feature">
+        <h3>🦖 openrappter</h3>
+        <p>Built for openrappter. Same agent contract in Python and TypeScript.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      MIT License • Part of <a href="https://github.com/kody-w/openrappter">openrappter</a>
+    </p>
+  </footer>
+</body>
+</html>

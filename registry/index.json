@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "updated": "2026-02-05T00:00:00Z",
+  "agents": [
+    {
+      "name": "hello-world",
+      "author": "rappterhub",
+      "version": "1.0.0",
+      "description": "A simple example agent that demonstrates the RappterHub agent format",
+      "runtime": "python",
+      "tags": ["example", "starter", "hello-world"],
+      "downloads": 0,
+      "stars": 0
+    }
+  ]
+}
