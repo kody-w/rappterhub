@@ -2,150 +2,155 @@
 
 # 📦 RappterHub
 
-### The package registry for AI agents
+### The registry for Single File Agents
 
-**npm for AI agents. Search, install, publish.**
+**One file. Documentation + contract + deterministic code. Shareable, installable, evolvable.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3b82f6.svg)](https://python.org)
 [![openrappter](https://img.shields.io/badge/openrappter-Compatible-a855f7.svg)](https://github.com/kody-w/openrappter)
 
-[openrappter](https://github.com/kody-w/openrappter) • [Browse Agents](#) • [Publish Your Own](#publishing)
+[openrappter](https://github.com/kody-w/openrappter) • [Manifesto](https://kody-w.github.io/openrappter/docs/single-file-agents.html) • [Browse Agents](#available-agents) • [Publish Your Own](#publishing-a-single-file-agent)
 
 ---
 
 </div>
 
-## What is RappterHub?
+## The Single File Agent Standard
 
-RappterHub is a community-driven registry for [openrappter](https://github.com/kody-w/openrappter) agents. Think npm, but for AI agents.
+The AI ecosystem is converging on "skills" — flat text files that tell an AI what to do. Skills are a start, but they're **not deterministic**. A skill tells the AI *what* to do but not *how*. The result? Inconsistent behavior, security gaps, and an inevitable bolt-on of plugins to add the determinism that was missing from the start.
 
-```bash
-# Install an agent with one command
-rappterhub install kody-w/git-helper
+**RappterHub is built on a different foundation: the Single File Agent.**
 
-# Use it immediately
-openrappter "summarize my commits this week"
-```
+A single file agent merges three layers into one portable file:
+
+| Layer | Purpose | In the File |
+|-------|---------|-------------|
+| 📋 **YAML Frontmatter** | Deterministic contract — name, version, parameters, schema | Module docstring header |
+| 📖 **Markdown Documentation** | The "skill" — what it does, how to use it, examples | Module docstring body |
+| ⚙️ **Executable Code** | Deterministic `perform()` — same input, same output, every time | Class implementation |
+
+**Why does this matter?**
+
+- **Skills alone aren't deterministic.** An LLM interprets a text file differently each time. A `perform()` method doesn't.
+- **Skills and plugins are two files.** A single file agent is one. No drift between what the docs say and what the code does.
+- **Skills can't be tested.** You can't write a unit test for a Markdown file. You can test `perform()`.
+- **Skills have no security boundary.** A single file agent has a typed parameter contract — it can only accept what the schema allows.
+
+> 📄 **[Read the full manifesto →](https://kody-w.github.io/openrappter/docs/single-file-agents.html)**
 
 ## Quick Start
 
 ```bash
-# Install the CLI
-pip install rappterhub
-
 # Search for agents
-rappterhub search "git automation"
-# Found 12 agents matching "git automation"
-#   kody-w/git-helper — Automate commits, PRs, and changelogs
-#   devops/changelog — Generate semantic changelogs
+openrappter rappterhub search "weather"
 
-# Install an agent
-rappterhub install kody-w/git-helper
-# ✓ Installed git-helper v1.2.0
+# Install an agent — it's just one file
+openrappter rappterhub install kody-w/weather-poet
 
-# List installed agents
-rappterhub list
+# Use it immediately
+openrappter --exec WeatherPoet "Tokyo"
 ```
 
-## Creating an Agent
+## The Single File Agent Format
 
-```bash
-# Scaffold a new agent
-rappterhub init my-agent
-
-# This creates:
-# my-agent/
-# ├── AGENT.md      # Manifest (required)
-# ├── agent.py      # Implementation (required)
-# └── README.md     # Documentation (optional)
-```
-
-### AGENT.md Format
-
-```yaml
----
-name: my-agent
-version: 1.0.0
-description: Short description of what this agent does
-author: your-github-username
-license: MIT
-runtime: python
-tags:
-  - automation
-  - git
----
-
-## Overview
-
-Detailed description of capabilities.
-
-## Usage
-
-Examples of how to use the agent.
-```
-
-### agent.py Template
+Every agent published to RappterHub is a **single `.py` file** that contains its complete identity:
 
 ```python
-from openrappter.agents.basic_agent import BasicAgent
+"""---
+name: weather-poet
+version: 1.0.0
+description: Fetches weather and writes haiku poetry about conditions
+author: kody-w
+tags: [weather, poetry, demo]
+parameters:
+  type: object
+  properties:
+    query:
+      type: string
+      description: City name to get weather for
+  required: []
+---
+# WeatherPoet Agent
+
+Fetches the current weather for any city using the wttr.in API,
+then composes a haiku (5-7-5 syllable poem) about the conditions.
+
+## Data Slush Output
+Returns `mood`, `condition`, `temp_f` for downstream agent chaining.
+"""
 import json
+from openrappter.agents.basic_agent import BasicAgent
 
-class MyAgent(BasicAgent):
+class WeatherPoetAgent(BasicAgent):
     def __init__(self):
-        metadata = {
-            "name": "my-agent",
-            "description": "What this agent does",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "User query"}
-                },
-                "required": []
-            }
-        }
-        super().__init__("my-agent", metadata)
+        super().__init__()  # metadata auto-parsed from docstring
 
-    def perform(self, **kwargs) -> str:
-        query = kwargs.get("query", "")
-        # Your agent logic here
-        return json.dumps({"status": "success", "result": "..."})
+    def perform(self, **kwargs):
+        query = kwargs.get('query', '')
+        weather = self.fetch_weather(query)
+        haiku = self.compose_haiku(weather)
+        return json.dumps({
+            "status": "success",
+            "haiku": haiku,
+            "data_slush": {"mood": weather["condition"], "temp_f": weather["temp"]}
+        })
 ```
 
-## Publishing
+**That's the entire agent.** No separate manifest. No companion files. No configuration to keep in sync. The file IS the agent IS the documentation IS the contract.
+
+## Publishing a Single File Agent
+
+### Option 1: Submit a PR
+
+```bash
+# Fork this repo, add your agent
+mkdir -p registry/agents/your-name/your-agent/
+cp your_agent.py registry/agents/your-name/your-agent/agent.py
+
+# Submit a PR
+```
+
+### Option 2: Use the CLI
 
 ```bash
 # Validate your agent
-rappterhub publish ./my-agent --dry-run
+rappterhub publish ./my_agent.py --dry-run
 
 # Publish to the registry
-rappterhub publish ./my-agent
+rappterhub publish ./my_agent.py
 ```
 
-Currently, publishing creates a PR to the [registry repository](https://github.com/rappterhub/registry). Automated publishing coming soon.
+### What Gets Extracted
+
+When you publish a single file agent, RappterHub automatically extracts:
+
+- **Name, version, author** from the YAML frontmatter
+- **Description** for the search index
+- **Tags** for categorization
+- **Documentation** from the Markdown body
+- **Parameter schema** for validation
+
+No separate `AGENT.md` needed. The file contains everything.
+
+## Available Agents
+
+| Agent | Author | Description |
+|-------|--------|-------------|
+| [weather-poet](registry/agents/kody-w/weather-poet/) | kody-w | Fetches weather and writes haiku poetry |
+
+> More agents coming soon. [Publish yours →](#publishing-a-single-file-agent)
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `rappterhub search <query>` | Search for agents |
-| `rappterhub install <author/name>` | Install an agent |
+| `rappterhub search <query>` | Search for agents by name, description, or tags |
+| `rappterhub install <author/name>` | Install an agent (downloads the single file) |
 | `rappterhub list` | List installed agents |
 | `rappterhub uninstall <name>` | Remove an agent |
-| `rappterhub init <name>` | Create a new agent project |
-| `rappterhub publish <path>` | Publish an agent |
-| `rappterhub info <name>` | Show agent details |
-
-## Integration with openrappter
-
-RappterHub is built into openrappter:
-
-```bash
-# Using openrappter CLI directly
-openrappter rappterhub search "web scraping"
-openrappter rappterhub install kody-w/scraper
-openrappter rappterhub list
-```
+| `rappterhub publish <path>` | Publish an agent to the registry |
+| `rappterhub info <name>` | Show agent details (parsed from the file itself) |
 
 ## Registry Structure
 
@@ -154,24 +159,45 @@ registry/
 ├── agents/
 │   └── {author}/
 │       └── {agent-name}/
-│           ├── AGENT.md      # Manifest
-│           ├── agent.py      # Python implementation
-│           └── agent.ts      # TypeScript (optional)
-└── index.json               # Searchable index
+│           └── agent.py        # The single file agent. That's it.
+└── index.json                  # Searchable index (auto-generated from frontmatter)
 ```
+
+## Integration with openrappter
+
+RappterHub is built into [openrappter](https://github.com/kody-w/openrappter):
+
+```bash
+# All commands work through openrappter
+openrappter rappterhub search "web scraping"
+openrappter rappterhub install kody-w/weather-poet
+openrappter rappterhub list
+```
+
+Installed agents are auto-discovered — no restart needed. They inherit data sloshing (automatic context enrichment) and data slush (agent-to-agent signal chaining) from the openrappter framework.
+
+## Why Not Just Skills?
+
+Every major AI framework is discovering the same progression:
+
+1. ✅ **Skills** — flat text files. Already mainstream.
+2. 🔄 **Plugins** — deterministic code called by skills. Arriving now.
+3. 🔜 **Unified format** — skill + plugin + contract merged into one file.
+
+RappterHub starts at step 3. The single file agent pattern has been running in production for over a year — generating agents, chaining them, evolving them through natural language feedback, and deploying them across endpoints.
+
+The industry will arrive here. We're already here.
 
 ## Contributing
 
-We welcome contributions!
-
-1. **Add an agent**: Fork the registry, add your agent, submit a PR
+1. **Publish an agent**: Fork, add your single file agent, submit a PR
 2. **Improve the CLI**: Check out `cli/` in this repo
 3. **Report issues**: Open an issue on GitHub
 
-## Related Projects
+## Related
 
 - [openrappter](https://github.com/kody-w/openrappter) — The AI agent framework
-- [ClawHub](https://clawhub.ai) — Skill registry for OpenClaw (compatible with openrappter)
+- [Single File Agent Manifesto](https://kody-w.github.io/openrappter/docs/single-file-agents.html) — Why skills alone aren't enough
 
 ## License
 
@@ -181,6 +207,6 @@ MIT
 
 <div align="center">
 
-**Built for the [openrappter](https://github.com/kody-w/openrappter) community** 🦖
+**The standard for shareable AI agents** 🦖
 
 </div>
