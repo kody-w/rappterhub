@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-02-05T00:00:00Z",
+  "updated": "2026-02-11T00:00:00Z",
   "agents": [
     {
       "name": "hello-world",
@@ -9,6 +9,16 @@
       "description": "A simple example agent that demonstrates the RappterHub agent format",
       "runtime": "python",
       "tags": ["example", "starter", "hello-world"],
+      "downloads": 0,
+      "stars": 0
+    },
+    {
+      "name": "weather-poet",
+      "author": "kody-w",
+      "version": "1.0.0",
+      "description": "Fetches live weather for any city and composes a haiku. Demonstrates data_slush for agent-to-agent signal chaining.",
+      "runtime": "python",
+      "tags": ["weather", "poetry", "haiku", "data-slush", "demo"],
       "downloads": 0,
       "stars": 0
     }
