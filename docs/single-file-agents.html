@@ -294,8 +294,8 @@
 <div class="layers">
   <div class="layer layer-1">
     <div class="layer-icon">📋</div>
-    <div class="layer-label">YAML Frontmatter</div>
-    <div class="layer-desc">Deterministic contract — name, version, parameters, schema. Machine-readable. Versionable.</div>
+    <div class="layer-label">Metadata Contract</div>
+    <div class="layer-desc">Deterministic contract — name, description, parameters, schema. Native code dicts/objects. Versionable.</div>
   </div>
   <div class="layer layer-2">
     <div class="layer-icon">📖</div>
@@ -316,34 +316,24 @@
   the skill says and what the code does.
 </p>
 
-<pre><code><span class="string">"""---
-name: WeatherPoet
-version: 1.0.0
-description: Fetches weather and writes haiku poetry
-author: kody-w
-tags: [weather, poetry, demo]
-parameters:
-  type: object
-  properties:
-    query:
-      type: string
-      description: City name to get weather for
-  required: []
----
-# WeatherPoet Agent
-
-Fetches the current weather for any city using the wttr.in API,
-then composes a haiku (5-7-5 syllable poem) about the conditions.
-
-## Supported Conditions
-Clear, Clouds, Rain, Snow, Fog — each with unique haiku fragments.
-"""</span>
-<span class="keyword">import</span> json
+<pre><code><span class="keyword">import</span> json
 <span class="keyword">from</span> openrappter.agents.basic_agent <span class="keyword">import</span> BasicAgent
 
 <span class="keyword">class</span> WeatherPoetAgent(BasicAgent):
     <span class="keyword">def</span> __init__(self):
-        super().__init__()  <span class="comment"># metadata auto-parsed from docstring</span>
+        self.name = <span class="string">'WeatherPoet'</span>
+        self.metadata = {
+            <span class="string">"name"</span>: self.name,
+            <span class="string">"description"</span>: <span class="string">"Fetches weather and writes haiku poetry"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"type"</span>: <span class="string">"object"</span>,
+                <span class="string">"properties"</span>: {
+                    <span class="string">"query"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>, <span class="string">"description"</span>: <span class="string">"City name to get weather for"</span>}
+                },
+                <span class="string">"required"</span>: []
+            }
+        }
+        super().__init__(name=self.name, metadata=self.metadata)
 
     <span class="keyword">def</span> perform(self, **kwargs):
         query = kwargs.get(<span class="string">'query'</span>, <span class="string">''</span>)
@@ -356,9 +346,8 @@ Clear, Clouds, Rain, Snow, Fog — each with unique haiku fragments.
         })</code></pre>
 
 <p>
-  <code>super().__init__()</code> with zero arguments. The base class reads the module's docstring,
-  parses the YAML frontmatter, extracts the metadata contract, and stores the Markdown documentation.
-  No boilerplate. No duplication. The file speaks for itself.
+  The metadata contract is defined right in the constructor using a native Python dict.
+  No parsing, no magic — just code that speaks for itself.
 </p>
 
 <h2>Why This Matters</h2>
@@ -404,7 +393,7 @@ Clear, Clouds, Rain, Snow, Fog — each with unique haiku fragments.
   <div class="principle">
     <div class="principle-icon">🔒</div>
     <h4>Bounded</h4>
-    <p>The YAML frontmatter defines exactly what parameters the agent accepts. The code defines exactly what it does with them. There are no surprises — an agent can't go through doors it wasn't given.</p>
+    <p>The metadata dict defines exactly what parameters the agent accepts. The code defines exactly what it does with them. There are no surprises — an agent can't go through doors it wasn't given.</p>
   </div>
   <div class="principle">
     <div class="principle-icon">🧬</div>
@@ -425,66 +414,52 @@ Clear, Clouds, Rain, Snow, Fog — each with unique haiku fragments.
 
 <h3>Python</h3>
 <p>
-  The module docstring contains YAML frontmatter + Markdown documentation.
-  <code>BasicAgent.__init__()</code> parses it automatically using a zero-dependency YAML parser.
+  The metadata contract is defined as a native Python dict in the constructor.
+  No YAML, no config files, no magic parsing — just straightforward code.
 </p>
 
-<pre><code><span class="comment"># The entire agent contract lives in the docstring:</span>
-<span class="string">"""---
-name: Shell
-version: 1.0.0
-description: Execute shell commands and file operations
-parameters:
-  type: object
-  properties:
-    command:
-      type: string
-      description: Shell command to execute
----
-# Shell Agent
-The core hands of the assistant.
-"""</span>
-
-<span class="keyword">class</span> ShellAgent(BasicAgent):
+<pre><code><span class="keyword">class</span> ShellAgent(BasicAgent):
     <span class="keyword">def</span> __init__(self):
-        super().__init__()  <span class="comment"># that's it. metadata is parsed.</span>
+        self.name = <span class="string">'Shell'</span>
+        self.metadata = {
+            <span class="string">"name"</span>: self.name,
+            <span class="string">"description"</span>: <span class="string">"Execute shell commands and file operations"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"type"</span>: <span class="string">"object"</span>,
+                <span class="string">"properties"</span>: {
+                    <span class="string">"command"</span>: {<span class="string">"type"</span>: <span class="string">"string"</span>, <span class="string">"description"</span>: <span class="string">"Shell command to execute"</span>}
+                },
+                <span class="string">"required"</span>: []
+            }
+        }
+        super().__init__(name=self.name, metadata=self.metadata)
 
     <span class="keyword">def</span> perform(self, **kwargs):
-        <span class="comment"># self.name → "Shell"</span>
-        <span class="comment"># self.metadata → { name, description, parameters }</span>
-        <span class="comment"># self.docs → "# Shell Agent\nThe core hands..."</span>
         <span class="comment"># self.context → enriched by data sloshing</span>
         ...</code></pre>
 
 <h3>TypeScript</h3>
 <p>
-  TypeScript uses a <code>static MANIFEST</code> string (since TS doesn't have module docstrings).
-  Same YAML frontmatter format, same auto-parsing.
+  TypeScript defines metadata as a native object passed to the <code>super()</code> constructor.
+  Same pattern, same clarity — no YAML, no static strings to parse.
 </p>
 
 <pre><code><span class="keyword">export class</span> ShellAgent <span class="keyword">extends</span> BasicAgent {
-  <span class="keyword">static override</span> MANIFEST = <span class="string">`---
-name: Shell
-version: 1.0.0
-description: Execute shell commands and file operations
-parameters:
-  type: object
-  properties:
-    command:
-      type: string
-      description: Shell command to execute
----
-# Shell Agent
-The core hands of the assistant.
-`</span>;
-
   constructor() {
-    super();  <span class="comment">// metadata parsed from MANIFEST</span>
+    <span class="keyword">const</span> metadata: AgentMetadata = {
+      name: <span class="string">'Shell'</span>,
+      description: <span class="string">'Execute shell commands and file operations'</span>,
+      parameters: {
+        type: <span class="string">'object'</span>,
+        properties: { command: { type: <span class="string">'string'</span>, description: <span class="string">'Shell command to execute'</span> } },
+        required: []
+      }
+    };
+    super(<span class="string">'Shell'</span>, metadata);
   }
 
   <span class="keyword">async</span> perform(kwargs: Record&lt;string, unknown&gt;): Promise&lt;string&gt; {
-    <span class="comment">// this.name → "Shell"</span>
-    <span class="comment">// this.docs → "# Shell Agent\n..."</span>
+    <span class="comment">// this.context → enriched by data sloshing</span>
     ...
   }
 }</code></pre>
@@ -499,7 +474,7 @@ The core hands of the assistant.
 <div class="callout green">
   <div class="callout-title">💬 "Learn a new agent that fetches Hacker News stories and summarizes the top 5"</div>
   <p>
-    LearnNew generates a complete single file agent — frontmatter, documentation, and working code —
+    LearnNew generates a complete single file agent — metadata, documentation, and working code —
     writes it to the <code>agents/</code> directory, and hot-loads it for immediate use.
     The generated agent follows the exact same pattern. It's self-describing from birth.
   </p>

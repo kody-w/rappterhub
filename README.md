@@ -10,7 +10,7 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3b82f6.svg)](https://python.org)
 [![openrappter](https://img.shields.io/badge/openrappter-Compatible-a855f7.svg)](https://github.com/kody-w/openrappter)
 
-[openrappter](https://github.com/kody-w/openrappter) • [Manifesto](https://kody-w.github.io/openrappter/docs/single-file-agents.html) • [Browse Agents](#available-agents) • [Publish Your Own](#publishing-a-single-file-agent)
+[openrappter](https://github.com/kody-w/openrappter) • [Manifesto](https://kody-w.github.io/rappterhub/single-file-agents.html) • [Browse Agents](#available-agents) • [Publish Your Own](#publishing-a-single-file-agent)
 
 ---
 
@@ -26,9 +26,9 @@ A single file agent merges three layers into one portable file:
 
 | Layer | Purpose | In the File |
 |-------|---------|-------------|
-| 📋 **YAML Frontmatter** | Deterministic contract — name, version, parameters, schema | Module docstring header |
-| 📖 **Markdown Documentation** | The "skill" — what it does, how to use it, examples | Module docstring body |
-| ⚙️ **Executable Code** | Deterministic `perform()` — same input, same output, every time | Class implementation |
+| 📋 **Native Metadata** | Deterministic contract — name, parameters, schema | `self.metadata = {...}` in `__init__()` |
+| 📖 **Module Docstring** | Documentation — what it does, how to use it | Module docstring |
+| ⚙️ **Executable Code** | Deterministic `perform()` — same input, same output | Class implementation |
 
 **Why does this matter?**
 
@@ -37,7 +37,7 @@ A single file agent merges three layers into one portable file:
 - **Skills can't be tested.** You can't write a unit test for a Markdown file. You can test `perform()`.
 - **Skills have no security boundary.** A single file agent has a typed parameter contract — it can only accept what the schema allows.
 
-> 📄 **[Read the full manifesto →](https://kody-w.github.io/openrappter/docs/single-file-agents.html)**
+> 📄 **[Read the full manifesto →](https://kody-w.github.io/rappterhub/single-file-agents.html)**
 
 ## Quick Start
 
@@ -57,34 +57,28 @@ openrappter --exec WeatherPoet "Tokyo"
 Every agent published to RappterHub is a **single `.py` file** that contains its complete identity:
 
 ```python
-"""---
-name: weather-poet
-version: 1.0.0
-description: Fetches weather and writes haiku poetry about conditions
-author: kody-w
-tags: [weather, poetry, demo]
-parameters:
-  type: object
-  properties:
-    query:
-      type: string
-      description: City name to get weather for
-  required: []
----
-# WeatherPoet Agent
-
-Fetches the current weather for any city using the wttr.in API,
-then composes a haiku (5-7-5 syllable poem) about the conditions.
-
-## Data Slush Output
-Returns `mood`, `condition`, `temp_f` for downstream agent chaining.
+"""
+WeatherPoet Agent — Fetches weather and writes haiku poetry about conditions.
+Returns mood, condition, temp_f for downstream agent chaining.
 """
 import json
 from openrappter.agents.basic_agent import BasicAgent
 
 class WeatherPoetAgent(BasicAgent):
     def __init__(self):
-        super().__init__()  # metadata auto-parsed from docstring
+        self.name = 'WeatherPoet'
+        self.metadata = {
+            "name": self.name,
+            "description": "Fetches weather and writes haiku poetry about conditions",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "City name to get weather for"}
+                },
+                "required": []
+            }
+        }
+        super().__init__(name=self.name, metadata=self.metadata)
 
     def perform(self, **kwargs):
         query = kwargs.get('query', '')
@@ -125,10 +119,9 @@ rappterhub publish ./my_agent.py
 
 When you publish a single file agent, RappterHub automatically extracts:
 
-- **Name, version, author** from the YAML frontmatter
-- **Description** for the search index
+- **Name, description** extracted from native metadata dict
 - **Tags** for categorization
-- **Documentation** from the Markdown body
+- **Documentation** from the module docstring
 - **Parameter schema** for validation
 
 No separate `AGENT.md` needed. The file contains everything.
@@ -160,7 +153,7 @@ registry/
 │   └── {author}/
 │       └── {agent-name}/
 │           └── agent.py        # The single file agent. That's it.
-└── index.json                  # Searchable index (auto-generated from frontmatter)
+└── index.json                  # Searchable index (auto-generated from metadata)
 ```
 
 ## Integration with openrappter
@@ -197,7 +190,7 @@ The industry will arrive here. We're already here.
 ## Related
 
 - [openrappter](https://github.com/kody-w/openrappter) — The AI agent framework
-- [Single File Agent Manifesto](https://kody-w.github.io/openrappter/docs/single-file-agents.html) — Why skills alone aren't enough
+- [Single File Agent Manifesto](https://kody-w.github.io/rappterhub/single-file-agents.html) — Why skills alone aren't enough
 
 ## License
 
