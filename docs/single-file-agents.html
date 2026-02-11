@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Single File Agent Manifesto — RappterHub</title>
+  <meta name="description" content="Why AI agent skills aren't enough. The Single File Agent pattern merges documentation, contract, and deterministic code into one portable file.">
+  <meta property="og:title" content="The Single File Agent Manifesto">
+  <meta property="og:description" content="Skills tell an AI what to do. Single File Agents tell it what to do AND how — deterministically, every time.">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #a855f7;
+      --purple-bright: #c084fc;
+      --purple-dark: #9333ea;
+      --green: #22c55e;
+      --green-bright: #4ade80;
+      --blue: #3b82f6;
+      --orange: #f97316;
+      --cyan: #06b6d4;
+      --red: #ef4444;
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --bg-elevated: #27272a;
+      --bg-hover: #3f3f46;
+      --text: #fafafa;
+      --text-secondary: #e4e4e7;
+      --text-muted: #a1a1aa;
+      --border: #3f3f46;
+      --border-light: #52525b;
+      --gradient: linear-gradient(135deg, var(--purple) 0%, var(--blue) 50%, var(--green) 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(9,9,11,0.9); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.1rem; }
+    .logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--purple); }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 10rem 2rem 5rem;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-block; padding: 6px 16px; border-radius: 20px;
+      background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3);
+      color: var(--purple-bright); font-size: 0.8rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero .subtitle {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      max-width: 650px;
+      margin: 0 auto 3rem;
+      line-height: 1.6;
+    }
+
+    /* ── Content ── */
+    .content {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+    .content h2 {
+      font-size: 1.8rem; font-weight: 800; margin: 4rem 0 1.5rem; color: var(--text);
+    }
+    .content h2:first-child { margin-top: 0; }
+    .content h3 {
+      font-size: 1.2rem; font-weight: 700; margin: 2.5rem 0 1rem; color: var(--purple-bright);
+    }
+    .content p {
+      margin-bottom: 1.2rem; color: var(--text-secondary); font-size: 1.05rem;
+    }
+    .content strong { color: var(--text); }
+    .content ul, .content ol {
+      margin-bottom: 1.5rem; padding-left: 1.5rem;
+    }
+    .content li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+    /* ── Callout Boxes ── */
+    .callout {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 2rem; margin: 2rem 0;
+    }
+    .callout.green { border-left: 4px solid var(--green); }
+    .callout.orange { border-left: 4px solid var(--orange); }
+    .callout.red { border-left: 4px solid var(--red); }
+    .callout.purple { border-left: 4px solid var(--purple); }
+    .callout .callout-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; color: var(--text); }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* ── Code ── */
+    pre {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.5rem; overflow-x: auto;
+      margin: 1.5rem 0; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
+      background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;
+      color: var(--purple-bright);
+    }
+    pre code { background: none; padding: 0; }
+    .comment { color: var(--text-muted); }
+    .keyword { color: var(--purple); }
+    .string { color: var(--green-bright); }
+
+    /* ── Comparison ── */
+    .comparison {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0;
+    }
+    .compare-col {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+    }
+    .compare-col.bad { border-top: 3px solid var(--red); }
+    .compare-col.good { border-top: 3px solid var(--green); }
+    .compare-col h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; }
+    .compare-col.bad h4 { color: var(--red); }
+    .compare-col.good h4 { color: var(--green); }
+    .compare-col ul { padding-left: 1.2rem; }
+    .compare-col li { font-size: 0.9rem; margin-bottom: 0.4rem; }
+
+    /* ── Layers ── */
+    .layers {
+      display: flex; flex-direction: column; gap: 0; margin: 2rem 0;
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .layer { padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .layer:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .layer-1 { background: rgba(168,85,247,0.08); }
+    .layer-2 { background: rgba(59,130,246,0.08); }
+    .layer-3 { background: rgba(34,197,94,0.08); }
+    .layer-icon { font-size: 1.3rem; width: 2rem; text-align: center; }
+    .layer-label { font-weight: 700; font-size: 0.95rem; min-width: 140px; }
+    .layer-1 .layer-label { color: var(--purple); }
+    .layer-2 .layer-label { color: var(--blue); }
+    .layer-3 .layer-label { color: var(--green); }
+    .layer-desc { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* ── Principles ── */
+    .principles {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0;
+    }
+    .principle {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+    }
+    .principle-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .principle h4 { font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+    .principle p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center; padding: 4rem 2rem; margin-top: 4rem;
+      border-top: 1px solid var(--border);
+    }
+    .cta-section h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+    .cta-section p { color: var(--text-muted); margin-bottom: 2rem; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--purple); color: #fff; }
+    .btn-primary:hover { background: var(--purple-dark); }
+    .btn-ghost { border: 1px solid var(--border); color: var(--text-secondary); }
+    .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+    footer {
+      text-align: center; padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.8rem;
+    }
+    footer a { color: var(--purple); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .comparison { grid-template-columns: 1fr; }
+      .principles { grid-template-columns: 1fr; }
+      .hero { padding: 8rem 1.5rem 3rem; }
+      .content { padding: 0 1.5rem 4rem; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="./" class="logo">📦 <span>Rappter</span>Hub</a>
+  <div class="nav-links">
+    <a href="./">Home</a>
+    <a href="./single-file-agents.html" class="active">Manifesto</a>
+    <a href="https://github.com/kody-w/openrappter">openrappter</a>
+    <a href="https://github.com/kody-w/rappterhub">GitHub</a>
+  </div>
+</nav>
+
+<!-- ████ HERO ████ -->
+<section class="hero">
+  <div class="hero-badge">📄 The Single File Agent Standard</div>
+  <h1>Skills Aren't Enough.</h1>
+  <p class="subtitle">
+    The AI ecosystem is converging on "skills" — flat text files that tell an AI what to do.
+    But text alone isn't deterministic. It's time for something better.
+  </p>
+</section>
+
+<!-- ████ CONTENT ████ -->
+<div class="content">
+
+<h2>The Problem</h2>
+
+<p>
+  Every major AI agent framework has arrived at the same idea: <strong>skills</strong>.
+  A text file — usually Markdown — describing what an agent should do.
+  "Here's how to query a database." "Here's how to send an email." "Here's how to deploy to production."
+</p>
+
+<p>
+  Skills are a great start. They're portable. They're human-readable. They're sharable.
+  But they have a fundamental flaw:
+</p>
+
+<div class="callout red">
+  <div class="callout-title">⚠️ Skills are not deterministic</div>
+  <p>
+    A skill tells an AI <em>what</em> to do. It does not tell it <em>how</em>.
+    When you hand an LLM a text file and say "do this," you're trusting the model
+    to interpret, implement, and execute correctly — every single time. It won't.
+  </p>
+</div>
+
+<p>
+  You'll see this play out in predictable stages:
+</p>
+
+<ol>
+  <li><strong>Skills launch.</strong> Everyone's excited. "Just write Markdown and the AI does it!"</li>
+  <li><strong>Quality issues emerge.</strong> The same skill produces different results each run. Edge cases break.</li>
+  <li><strong>Plugins get added.</strong> "OK, let the skill call deterministic code." Now you have two files — a skill AND a plugin.</li>
+  <li><strong>Security surfaces.</strong> Malicious skills appear. There's no contract, no structure — just freeform text the AI trusts blindly.</li>
+  <li><strong>Everyone realizes:</strong> You need documentation AND code AND a contract, all in one portable unit.</li>
+</ol>
+
+<p>
+  We've been there. We solved it over a year ago.
+</p>
+
+<h2>The Single File Agent</h2>
+
+<p>
+  A <strong>Single File Agent</strong> is exactly what it sounds like: one file containing
+  everything an agent needs to exist — its documentation, its metadata contract, and its
+  deterministic code.
+</p>
+
+<div class="layers">
+  <div class="layer layer-1">
+    <div class="layer-icon">📋</div>
+    <div class="layer-label">YAML Frontmatter</div>
+    <div class="layer-desc">Deterministic contract — name, version, parameters, schema. Machine-readable. Versionable.</div>
+  </div>
+  <div class="layer layer-2">
+    <div class="layer-icon">📖</div>
+    <div class="layer-label">Markdown Docs</div>
+    <div class="layer-desc">The "skill" — what it does, how to use it, examples, edge cases. Human AND AI readable.</div>
+  </div>
+  <div class="layer layer-3">
+    <div class="layer-icon">⚙️</div>
+    <div class="layer-label">Executable Code</div>
+    <div class="layer-desc">Deterministic perform() — does the same thing every time. Testable. Auditable.</div>
+  </div>
+</div>
+
+<p>
+  All three layers live in a single <code>.py</code> or <code>.ts</code> file.
+  The documentation IS the file. The contract IS the file. The code IS the file.
+  There is no separation to manage, no files to keep in sync, no drift between what
+  the skill says and what the code does.
+</p>
+
+<pre><code><span class="string">"""---
+name: WeatherPoet
+version: 1.0.0
+description: Fetches weather and writes haiku poetry
+author: kody-w
+tags: [weather, poetry, demo]
+parameters:
+  type: object
+  properties:
+    query:
+      type: string
+      description: City name to get weather for
+  required: []
+---
+# WeatherPoet Agent
+
+Fetches the current weather for any city using the wttr.in API,
+then composes a haiku (5-7-5 syllable poem) about the conditions.
+
+## Supported Conditions
+Clear, Clouds, Rain, Snow, Fog — each with unique haiku fragments.
+"""</span>
+<span class="keyword">import</span> json
+<span class="keyword">from</span> openrappter.agents.basic_agent <span class="keyword">import</span> BasicAgent
+
+<span class="keyword">class</span> WeatherPoetAgent(BasicAgent):
+    <span class="keyword">def</span> __init__(self):
+        super().__init__()  <span class="comment"># metadata auto-parsed from docstring</span>
+
+    <span class="keyword">def</span> perform(self, **kwargs):
+        query = kwargs.get(<span class="string">'query'</span>, <span class="string">''</span>)
+        weather = self.fetch_weather(query)
+        haiku = self.compose_haiku(weather)
+        <span class="keyword">return</span> json.dumps({
+            <span class="string">"status"</span>: <span class="string">"success"</span>,
+            <span class="string">"haiku"</span>: haiku,
+            <span class="string">"data_slush"</span>: {<span class="string">"mood"</span>: weather[<span class="string">"condition"</span>], <span class="string">"temp_f"</span>: weather[<span class="string">"temp"</span>]}
+        })</code></pre>
+
+<p>
+  <code>super().__init__()</code> with zero arguments. The base class reads the module's docstring,
+  parses the YAML frontmatter, extracts the metadata contract, and stores the Markdown documentation.
+  No boilerplate. No duplication. The file speaks for itself.
+</p>
+
+<h2>Why This Matters</h2>
+
+<div class="comparison">
+  <div class="compare-col bad">
+    <h4>❌ Skills Alone</h4>
+    <ul>
+      <li>AI interprets freely → inconsistent results</li>
+      <li>No version control on behavior</li>
+      <li>Security is "trust the text file"</li>
+      <li>Documentation drifts from implementation</li>
+      <li>Need plugins for determinism (now it's 2+ files)</li>
+      <li>Can't test a Markdown file</li>
+    </ul>
+  </div>
+  <div class="compare-col good">
+    <h4>✅ Single File Agents</h4>
+    <ul>
+      <li>Deterministic perform() — same input, same output</li>
+      <li>Semantic versioning in the contract</li>
+      <li>Auditable code with bounded behavior</li>
+      <li>Docs and code are literally the same file</li>
+      <li>One file. Always one file.</li>
+      <li>Standard unit tests, standard CI/CD</li>
+    </ul>
+  </div>
+</div>
+
+<h2>The Five Principles</h2>
+
+<div class="principles">
+  <div class="principle">
+    <div class="principle-icon">🎯</div>
+    <h4>Deterministic</h4>
+    <p>An agent's <code>perform()</code> does the same thing every time for the same inputs. The AI orchestrator decides <em>when</em> to call it — the agent decides <em>how</em> to execute.</p>
+  </div>
+  <div class="principle">
+    <div class="principle-icon">📦</div>
+    <h4>Self-Describing</h4>
+    <p>The file contains its own documentation, its own contract, and its own implementation. Drop it anywhere and it works. No external manifest, no companion files.</p>
+  </div>
+  <div class="principle">
+    <div class="principle-icon">🔒</div>
+    <h4>Bounded</h4>
+    <p>The YAML frontmatter defines exactly what parameters the agent accepts. The code defines exactly what it does with them. There are no surprises — an agent can't go through doors it wasn't given.</p>
+  </div>
+  <div class="principle">
+    <div class="principle-icon">🧬</div>
+    <h4>Evolvable</h4>
+    <p>Single file agents can be generated, molted, and versioned through natural language. "Make my news agent also include Reddit." The agent evolves — the contract stays clean.</p>
+  </div>
+</div>
+
+<div class="principles" style="max-width: 400px; margin: 0 auto 2rem;">
+  <div class="principle">
+    <div class="principle-icon">🔗</div>
+    <h4>Chainable</h4>
+    <p>Agents output <code>data_slush</code> — curated signals from live results that feed into the next agent's context automatically. No LLM interpreter needed between steps.</p>
+  </div>
+</div>
+
+<h2>How It Works</h2>
+
+<h3>Python</h3>
+<p>
+  The module docstring contains YAML frontmatter + Markdown documentation.
+  <code>BasicAgent.__init__()</code> parses it automatically using a zero-dependency YAML parser.
+</p>
+
+<pre><code><span class="comment"># The entire agent contract lives in the docstring:</span>
+<span class="string">"""---
+name: Shell
+version: 1.0.0
+description: Execute shell commands and file operations
+parameters:
+  type: object
+  properties:
+    command:
+      type: string
+      description: Shell command to execute
+---
+# Shell Agent
+The core hands of the assistant.
+"""</span>
+
+<span class="keyword">class</span> ShellAgent(BasicAgent):
+    <span class="keyword">def</span> __init__(self):
+        super().__init__()  <span class="comment"># that's it. metadata is parsed.</span>
+
+    <span class="keyword">def</span> perform(self, **kwargs):
+        <span class="comment"># self.name → "Shell"</span>
+        <span class="comment"># self.metadata → { name, description, parameters }</span>
+        <span class="comment"># self.docs → "# Shell Agent\nThe core hands..."</span>
+        <span class="comment"># self.context → enriched by data sloshing</span>
+        ...</code></pre>
+
+<h3>TypeScript</h3>
+<p>
+  TypeScript uses a <code>static MANIFEST</code> string (since TS doesn't have module docstrings).
+  Same YAML frontmatter format, same auto-parsing.
+</p>
+
+<pre><code><span class="keyword">export class</span> ShellAgent <span class="keyword">extends</span> BasicAgent {
+  <span class="keyword">static override</span> MANIFEST = <span class="string">`---
+name: Shell
+version: 1.0.0
+description: Execute shell commands and file operations
+parameters:
+  type: object
+  properties:
+    command:
+      type: string
+      description: Shell command to execute
+---
+# Shell Agent
+The core hands of the assistant.
+`</span>;
+
+  constructor() {
+    super();  <span class="comment">// metadata parsed from MANIFEST</span>
+  }
+
+  <span class="keyword">async</span> perform(kwargs: Record&lt;string, unknown&gt;): Promise&lt;string&gt; {
+    <span class="comment">// this.name → "Shell"</span>
+    <span class="comment">// this.docs → "# Shell Agent\n..."</span>
+    ...
+  }
+}</code></pre>
+
+<h2>Agent Generation</h2>
+
+<p>
+  The pattern gets more powerful when agents generate other agents.
+  The <code>LearnNew</code> meta-agent creates single file agents from natural language:
+</p>
+
+<div class="callout green">
+  <div class="callout-title">💬 "Learn a new agent that fetches Hacker News stories and summarizes the top 5"</div>
+  <p>
+    LearnNew generates a complete single file agent — frontmatter, documentation, and working code —
+    writes it to the <code>agents/</code> directory, and hot-loads it for immediate use.
+    The generated agent follows the exact same pattern. It's self-describing from birth.
+  </p>
+</div>
+
+<p>
+  Because the output is a single file with a deterministic contract, generated agents are:
+</p>
+<ul>
+  <li><strong>Publishable</strong> — push directly to RappterHub (no separate manifest to write)</li>
+  <li><strong>Testable</strong> — standard unit tests against <code>perform()</code></li>
+  <li><strong>Auditable</strong> — read one file to understand everything the agent can do</li>
+  <li><strong>Moltable</strong> — evolve through feedback: "add Reddit sources" → new generation, same contract</li>
+</ul>
+
+<h2>Implicit Context: Data Sloshing</h2>
+
+<p>
+  Every single file agent inherits <strong>data sloshing</strong> — automatic context enrichment
+  before <code>perform()</code> runs. The agent wakes up already knowing:
+</p>
+
+<ul>
+  <li>⏰ <strong>Temporal</strong> — time of day, day of week, fiscal period, urgency signals</li>
+  <li>🧠 <strong>Memory</strong> — relevant past interactions surfaced by overlap</li>
+  <li>🎯 <strong>Query</strong> — specificity, ownership hints, temporal references</li>
+  <li>👤 <strong>Behavioral</strong> — user's technical level, brevity preference</li>
+  <li>🧊 <strong>Upstream Slush</strong> — live signals from the previous agent in a chain</li>
+</ul>
+
+<p>
+  The agent doesn't ask for this context. It doesn't configure it. It's just <em>there</em>,
+  in <code>self.context</code>, before the first line of <code>perform()</code> executes.
+  This is what makes the pattern biological — the agent wakes up oriented, not blank.
+</p>
+
+<h2>The Roadmap Is Already Playing Out</h2>
+
+<p>
+  Watch the AI ecosystem over the next few months. You'll see this exact progression:
+</p>
+
+<ol>
+  <li>✅ <strong>Skills</strong> — flat text files. Already mainstream.</li>
+  <li>🔄 <strong>Plugins</strong> — deterministic code called by skills. Arriving now.</li>
+  <li>🔜 <strong>Unified format</strong> — skill + plugin + contract merged into one file.</li>
+  <li>🔜 <strong>Agent registries</strong> — sharing and installing single file agents.</li>
+  <li>🔜 <strong>Agent generation</strong> — AI creating agents that create agents.</li>
+</ol>
+
+<p>
+  We're already at step 5. The single file agent pattern has been running in production
+  for over a year — generating agents, chaining them, molting them through feedback loops,
+  and deploying them across endpoints.
+</p>
+
+<div class="callout purple">
+  <div class="callout-title">🧬 The file IS the agent IS the documentation IS the contract</div>
+  <p>
+    There is no separation to manage. No skill file that drifts from the code.
+    No manifest that gets out of date. No plugin that doesn't match the schema.
+    One file. One truth. Deterministic, portable, evolvable.
+  </p>
+</div>
+
+<h2>RappterHub: The Registry</h2>
+
+<p>
+  <strong>RappterHub</strong> is the package registry built on the single file agent standard.
+  Publishing is simple — your agent file already contains its manifest, documentation, and code.
+  No separate <code>AGENT.md</code> or <code>package.json</code> needed.
+</p>
+
+<pre><code><span class="comment"># Publish your single file agent</span>
+<span class="keyword">$</span> rappterhub publish ./my_agent.py
+
+<span class="comment"># Others install it with one command</span>
+<span class="keyword">$</span> rappterhub install kody-w/weather-poet
+<span class="string">✓ Installed weather-poet v1.0.0</span>
+
+<span class="comment"># It works immediately — no configuration</span>
+<span class="keyword">$</span> openrappter --exec WeatherPoet "Tokyo"</code></pre>
+
+</div>
+
+<!-- ████ CTA ████ -->
+<section class="cta-section">
+  <h2>Build the Future of AI Agents</h2>
+  <p>Open source. Single file. Deterministic. The standard is set.</p>
+  <div class="cta-buttons">
+    <a href="https://github.com/kody-w/rappterhub" class="btn btn-primary" target="_blank">
+      📦 Browse RappterHub
+    </a>
+    <a href="https://github.com/kody-w/openrappter" class="btn btn-ghost" target="_blank">
+      🦖 openrappter Framework
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>RappterHub — MIT License — Built by <a href="https://github.com/kody-w">Kody W</a></p>
+</footer>
+
+</body>
+</html>
