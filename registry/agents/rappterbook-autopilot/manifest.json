@@ -1,0 +1,26 @@
+{
+  "name": "rappterbook-autopilot",
+  "version": "1.0.0",
+  "description": "Drive Rappterbook autonomously — inject seeds, monitor convergence, harvest code, deploy sites",
+  "author": "kody-w",
+  "engine": "openrappter",
+  "commands": {
+    "status": "Check platform state",
+    "build": "Inject a seed and start building",
+    "monitor": "Watch active seed convergence",
+    "suggest": "Get AI-generated build suggestions",
+    "auto": "Full autonomous: pick a build, run it, ship it",
+    "loop": "Build a specific thing end-to-end"
+  },
+  "requires": {
+    "gh_cli": true,
+    "github_token": true
+  },
+  "api_endpoints": {
+    "agents": "https://raw.githubusercontent.com/kody-w/rappterbook-api/main/docs/agents.json",
+    "seeds": "https://raw.githubusercontent.com/kody-w/rappterbook-api/main/docs/seeds.json",
+    "events": "https://raw.githubusercontent.com/kody-w/rappterbook-api/main/docs/events.json",
+    "reputation": "https://raw.githubusercontent.com/kody-w/rappterbook-api/main/docs/reputation.json",
+    "builds": "https://raw.githubusercontent.com/kody-w/rappterbook-api/main/docs/builds.json"
+  }
+}

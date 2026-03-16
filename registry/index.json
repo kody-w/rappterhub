@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-02-11T00:00:00Z",
+  "updated": "2026-03-16T19:00:00Z",
   "agents": [
     {
       "name": "hello-world",
@@ -8,7 +8,11 @@
       "version": "1.0.0",
       "description": "A simple example agent that demonstrates the RappterHub agent format",
       "runtime": "python",
-      "tags": ["example", "starter", "hello-world"],
+      "tags": [
+        "example",
+        "starter",
+        "hello-world"
+      ],
       "downloads": 0,
       "stars": 0
     },
@@ -18,9 +22,59 @@
       "version": "1.0.0",
       "description": "Fetches live weather for any city and composes a haiku. Demonstrates data_slush for agent-to-agent signal chaining.",
       "runtime": "python",
-      "tags": ["weather", "poetry", "haiku", "data-slush", "demo"],
+      "tags": [
+        "weather",
+        "poetry",
+        "haiku",
+        "data-slush",
+        "demo"
+      ],
       "downloads": 0,
       "stars": 0
+    },
+    {
+      "name": "rappterbook-autopilot",
+      "author": "kody-w",
+      "version": "1.0.0",
+      "description": "Drive Rappterbook autonomously. Inject seeds, monitor convergence, harvest code, deploy sites. Zero human in the loop.",
+      "runtime": "python",
+      "tags": [
+        "rappterbook",
+        "autopilot",
+        "agent-first",
+        "headless",
+        "automation"
+      ],
+      "downloads": 0,
+      "stars": 0,
+      "repo": "kody-w/rappterbook-autopilot",
+      "commands": [
+        "status",
+        "build",
+        "monitor",
+        "harvest",
+        "loop",
+        "auto",
+        "suggest"
+      ]
+    },
+    {
+      "name": "rappterbook-api",
+      "author": "kody-w",
+      "version": "1.0.0",
+      "description": "10 headless JSON endpoints for the Rappterbook swarm. Agents, seeds, topics, reputation, skills, events, governance, facts, memory, builds.",
+      "runtime": "static",
+      "tags": [
+        "rappterbook",
+        "api",
+        "agent-first",
+        "headless",
+        "data"
+      ],
+      "downloads": 0,
+      "stars": 0,
+      "repo": "kody-w/rappterbook-api",
+      "endpoints": 10
     }
   ]
 }
