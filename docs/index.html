@@ -1,265 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RappterHub — The Registry for Single File Agents</title>
-  <meta name="description" content="The package registry for single file agents. Documentation + contract + deterministic code in one file. Search, install, publish.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --purple: #a855f7;
-      --purple-dark: #9333ea;
-      --green: #22c55e;
-      --blue: #3b82f6;
-      --bg: #09090b;
-      --bg-card: #18181b;
-      --bg-elevated: #27272a;
-      --text: #fafafa;
-      --text-muted: #a1a1aa;
-      --border: #3f3f46;
-      --gradient: linear-gradient(135deg, var(--purple) 0%, var(--blue) 50%, var(--green) 100%);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RappterHub — Package Registry for AI Agents</title>
+<meta name="description" content="Install AI agent packages with one command. Browse, search, and publish single-file agents.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px}
+a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+/* Header */
+.header{background:#161b22;border-bottom:1px solid #30363d;padding:16px 24px;display:flex;align-items:center;gap:16px}
+.header .logo{font-size:20px;font-weight:700;color:#f0f6fc;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px}
+.header .logo span{color:#a855f7}
+.header nav{display:flex;gap:16px;margin-left:auto;font-size:13px}
+.header nav a{color:#8b949e}
+.header nav a:hover{color:#f0f6fc;text-decoration:none}
 
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
+/* Hero */
+.hero{text-align:center;padding:48px 24px 32px;border-bottom:1px solid #30363d}
+.hero h1{font-size:32px;color:#f0f6fc;margin-bottom:8px}
+.hero h1 span{color:#a855f7}
+.hero p{color:#8b949e;font-size:16px;max-width:600px;margin:0 auto 20px}
+.hero .install{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:14px;color:#c9d1d9;display:inline-block}
+.hero .install .cmd{color:#a855f7}
 
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
-      background: rgba(9, 9, 11, 0.9); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-    }
+/* Search */
+.search-bar{max-width:900px;margin:24px auto;padding:0 24px}
+.search-bar input{width:100%;padding:10px 16px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px;font-family:inherit}
+.search-bar input:focus{border-color:#a855f7;outline:none}
 
-    .logo { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.1rem; }
-    .logo span { color: var(--purple); }
-    .nav-links { display: flex; gap: 1.5rem; }
-    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; }
-    .nav-links a:hover { color: var(--text); }
+/* Stats */
+.stats-row{display:flex;justify-content:center;gap:32px;padding:16px;color:#8b949e;font-size:13px}
+.stats-row strong{color:#f0f6fc}
 
-    .hero {
-      padding: 10rem 2rem 6rem;
-      text-align: center;
-      max-width: 800px;
-      margin: 0 auto;
-    }
+/* Package grid */
+.packages{max-width:900px;margin:0 auto;padding:0 24px 40px}
+.package{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:16px;margin-bottom:12px;transition:border-color 0.2s}
+.package:hover{border-color:#a855f7}
+.pkg-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.pkg-icon{font-size:28px;flex-shrink:0}
+.pkg-info{flex:1}
+.pkg-name{font-size:16px;font-weight:600;color:#f0f6fc}
+.pkg-name .version{color:#8b949e;font-weight:400;font-size:12px;margin-left:6px}
+.pkg-author{color:#8b949e;font-size:12px;margin-top:2px}
+.pkg-desc{color:#8b949e;font-size:13px;line-height:1.5;margin-bottom:10px}
+.pkg-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.tag{background:#30363d;color:#8b949e;padding:2px 8px;border-radius:12px;font-size:11px}
+.tag.runtime{background:#238636;color:#fff}
+.tag.agent{background:#a855f722;color:#a855f7}
+.pkg-meta{display:flex;gap:16px;font-size:12px;color:#484f58}
+.pkg-meta span{display:flex;align-items:center;gap:4px}
+.pkg-actions{display:flex;gap:8px;margin-top:10px}
+.pkg-actions a{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500}
+.btn-primary{background:#238636;color:#fff;border:1px solid #238636}
+.btn-primary:hover{background:#2ea043;text-decoration:none}
+.btn-secondary{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.btn-secondary:hover{background:#30363d;text-decoration:none}
 
-    .hero h1 {
-      font-size: clamp(2.5rem, 5vw, 3.5rem);
-      font-weight: 900;
-      line-height: 1.15;
-      margin-bottom: 1.5rem;
-    }
-    .hero h1 span {
-      background: var(--gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+/* Commands section */
+.commands{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.cmd{background:#0d1117;border:1px solid #30363d;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#a855f7}
 
-    .hero p {
-      font-size: 1.2rem;
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 2.5rem;
-    }
+/* Footer */
+.footer{text-align:center;padding:32px;color:#484f58;font-size:12px;border-top:1px solid #30363d}
+.footer a{color:#58a6ff}
 
-    .cta { display: flex; gap: 1rem; justify-content: center; margin-bottom: 4rem; flex-wrap: wrap; }
-    .btn {
-      padding: 0.75rem 1.5rem; border-radius: 8px;
-      text-decoration: none; font-weight: 600; font-size: 0.95rem;
-      transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
-    }
-    .btn-primary { background: var(--purple); color: #fff; }
-    .btn-primary:hover { background: var(--purple-dark); }
-    .btn-secondary { border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+/* Loading */
+.loading{text-align:center;padding:40px;color:#484f58}
 
-    .terminal {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 12px; max-width: 600px; margin: 0 auto;
-      overflow: hidden; text-align: left;
-    }
-    .terminal-header {
-      display: flex; gap: 6px; padding: 0.75rem 1rem;
-      background: var(--bg-elevated); border-bottom: 1px solid var(--border);
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot.red { background: #ff5f56; }
-    .dot.yellow { background: #ffbd2e; }
-    .dot.green { background: #27c93f; }
-    .terminal-body {
-      padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
-    }
-    .line { margin-bottom: 0.5rem; }
-    .prompt { color: var(--purple); }
-    .comment { color: var(--text-muted); }
-    .success { color: var(--green); }
-
-    /* ── Manifesto Banner ── */
-    .manifesto-banner {
-      max-width: 800px; margin: 0 auto; padding: 0 2rem;
-    }
-    .manifesto-card {
-      background: var(--bg-card); border: 1px solid rgba(168,85,247,0.3);
-      border-radius: 16px; padding: 2.5rem; text-align: center;
-      position: relative; overflow: hidden;
-    }
-    .manifesto-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--gradient);
-    }
-    .manifesto-card h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-    .manifesto-card p { color: var(--text-muted); margin-bottom: 1.5rem; max-width: 550px; margin-left: auto; margin-right: auto; }
-    .manifesto-card .layers {
-      display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; flex-wrap: wrap;
-    }
-    .manifesto-card .layer-item { display: flex; align-items: center; gap: 0.5rem; }
-    .manifesto-card .layer-item .icon { font-size: 1.2rem; }
-    .manifesto-card .layer-item .label { font-size: 0.85rem; font-weight: 600; }
-    .purple-text { color: var(--purple); }
-    .blue-text { color: var(--blue); }
-    .green-text { color: var(--green); }
-
-    .features {
-      padding: 6rem 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .features h2 {
-      font-size: 2.5rem; text-align: center; margin-bottom: 4rem;
-    }
-    .feature-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;
-    }
-    .feature {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 2rem;
-    }
-    .feature h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-    .feature p { color: var(--text-muted); }
-
-    footer {
-      padding: 3rem 2rem; text-align: center;
-      border-top: 1px solid var(--border); color: var(--text-muted);
-    }
-    footer a { color: var(--purple); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .manifesto-card .layers { flex-direction: column; align-items: center; }
-    }
-  </style>
+@media(max-width:600px){
+  .hero h1{font-size:24px}
+  .stats-row{flex-wrap:wrap;gap:16px}
+  .pkg-header{flex-direction:column}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<div class="header">
+  <div class="logo">🦖 <span>Rappter</span>Hub</div>
   <nav>
-    <a href="./" class="logo">📦 <span>Rappter</span>Hub</a>
-    <div class="nav-links">
-      <a href="./single-file-agents.html">Manifesto</a>
-      <a href="https://github.com/kody-w/openrappter">openrappter</a>
-      <a href="https://github.com/kody-w/rappterhub">GitHub</a>
-    </div>
+    <a href="single-file-agents.html">Manifesto</a>
+    <a href="https://github.com/kody-w/rappterhub">GitHub</a>
+    <a href="https://github.com/kody-w/openrappter">OpenRappter</a>
+    <a href="https://kody-w.github.io/rappterbook/">Rappterbook</a>
   </nav>
+</div>
 
-  <section class="hero">
-    <h1>The registry for <span>Single File Agents</span></h1>
-    <p>
-      One file. Documentation + contract + deterministic code.
-      Shareable, installable, evolvable. The standard for AI agents.
-    </p>
+<div class="hero">
+  <h1>The package registry for <span>AI agents</span></h1>
+  <p>Browse, install, and publish single-file agents. Each package is a self-contained AI capability — documentation, contract, and deterministic code in one portable file.</p>
+  <div class="install"><span class="cmd">openrappter install</span> &lt;package-name&gt;</div>
+</div>
 
-    <div class="cta">
-      <a href="./single-file-agents.html" class="btn btn-primary">📄 Read the Manifesto</a>
-      <a href="https://github.com/kody-w/rappterhub" class="btn btn-secondary">Browse Agents</a>
-    </div>
+<div class="stats-row" id="stats">
+  <span><strong id="pkg-count">—</strong> packages</span>
+  <span><strong id="author-count">—</strong> authors</span>
+  <span><strong id="runtime-count">—</strong> runtimes</span>
+</div>
 
-    <div class="terminal">
-      <div class="terminal-header">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
-      </div>
-      <div class="terminal-body">
-        <div class="line comment"># Install a single file agent</div>
-        <div class="line"><span class="prompt">$</span> rappterhub install kody-w/weather-poet</div>
-        <div class="line success">✓ Installed weather-poet v1.0.0 (1 file)</div>
-        <br>
-        <div class="line comment"># Use it immediately</div>
-        <div class="line"><span class="prompt">$</span> openrappter --exec WeatherPoet "Tokyo"</div>
-        <div class="line">🌤 Partly cloudy, 52°F</div>
-        <div class="line" style="color:#a1a1aa;font-style:italic">Gray clouds drift along / a quilt of silver and white / light fades in and out</div>
-      </div>
-    </div>
-  </section>
+<div class="search-bar">
+  <input type="text" id="search" placeholder="Search packages..." oninput="render()">
+</div>
 
-  <!-- Manifesto Banner -->
-  <section class="manifesto-banner">
-    <div class="manifesto-card">
-      <h2>Why Skills Aren't Enough</h2>
-      <p>
-        Skills tell an AI <em>what</em> to do. Single File Agents tell it <em>what</em> AND <em>how</em> —
-        deterministically, every time. Three layers, one file:
-      </p>
-      <div class="layers">
-        <div class="layer-item">
-          <span class="icon">📋</span>
-          <span class="label purple-text">YAML Contract</span>
+<div class="packages" id="packages">
+  <div class="loading">Loading registry...</div>
+</div>
+
+<div class="footer">
+  <a href="https://github.com/kody-w/rappterhub">RappterHub</a> is the package registry for <a href="https://github.com/kody-w/openrappter">OpenRappter</a> — local-first AI agents.<br>
+  <a href="single-file-agents.html">Read the Single File Agent Manifesto →</a>
+</div>
+
+<script>
+let REGISTRY = [];
+
+async function load() {
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/kody-w/rappterhub/main/registry/index.json');
+    const data = await r.json();
+    REGISTRY = data.agents || [];
+
+    document.getElementById('pkg-count').textContent = REGISTRY.length;
+    document.getElementById('author-count').textContent = new Set(REGISTRY.map(a => a.author)).size;
+    document.getElementById('runtime-count').textContent = new Set(REGISTRY.map(a => a.runtime)).size;
+
+    render();
+  } catch(e) {
+    document.getElementById('packages').innerHTML = '<div class="loading">Could not load registry</div>';
+  }
+}
+
+function render() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const filtered = REGISTRY.filter(p =>
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.description || '').toLowerCase().includes(q) ||
+    (p.tags || []).some(t => t.includes(q))
+  );
+
+  const el = document.getElementById('packages');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="loading">No packages match your search</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(pkg => {
+    const icon = pkg.name.includes('autopilot') ? '🤖'
+      : pkg.name.includes('api') ? '🔌'
+      : pkg.name.includes('weather') ? '🌤️'
+      : pkg.name.includes('hello') ? '👋'
+      : '📦';
+
+    const repoLink = pkg.repo ? `https://github.com/${pkg.repo}` : `https://github.com/kody-w/rappterhub/tree/main/registry/agents/${pkg.name}`;
+
+    const commands = pkg.commands ? '<div class="commands">' + pkg.commands.map(c => `<span class="cmd">${c}</span>`).join('') + '</div>' : '';
+
+    const endpoints = pkg.endpoints ? `<span>🔗 ${pkg.endpoints} endpoints</span>` : '';
+
+    return `<div class="package">
+      <div class="pkg-header">
+        <div class="pkg-icon">${icon}</div>
+        <div class="pkg-info">
+          <div class="pkg-name">${pkg.name}<span class="version">v${pkg.version || '1.0.0'}</span></div>
+          <div class="pkg-author">Published by <strong>${pkg.author}</strong></div>
         </div>
-        <div class="layer-item">
-          <span class="icon">📖</span>
-          <span class="label blue-text">Markdown Docs</span>
-        </div>
-        <div class="layer-item">
-          <span class="icon">⚙️</span>
-          <span class="label green-text">Deterministic Code</span>
-        </div>
       </div>
-      <a href="./single-file-agents.html" class="btn btn-primary">Read the Full Manifesto →</a>
-    </div>
-  </section>
+      <div class="pkg-desc">${pkg.description}</div>
+      <div class="pkg-tags">
+        <span class="tag runtime">${pkg.runtime}</span>
+        ${(pkg.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+      </div>
+      ${commands}
+      <div class="pkg-meta">
+        <span>⬇️ ${pkg.downloads || 0} installs</span>
+        <span>⭐ ${pkg.stars || 0} stars</span>
+        ${endpoints}
+      </div>
+      <div class="pkg-actions">
+        <a href="${repoLink}" class="btn-primary" target="_blank">View Package</a>
+        <a href="#" class="btn-secondary" onclick="navigator.clipboard.writeText('openrappter install ${pkg.name}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy Install',1500);return false">Copy Install</a>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-  <section class="features">
-    <h2>Why RappterHub?</h2>
-    <div class="feature-grid">
-      <div class="feature">
-        <h3>📄 Single File Standard</h3>
-        <p>Every agent is one file — docs, contract, and code. No manifest drift. No companion files. The file IS the agent.</p>
-      </div>
-      <div class="feature">
-        <h3>🎯 Deterministic</h3>
-        <p>Agents have a perform() method that does the same thing every time. Unlike skills, behavior doesn't depend on LLM interpretation.</p>
-      </div>
-      <div class="feature">
-        <h3>📥 One Command Install</h3>
-        <p>Install any agent with one command. It works immediately — auto-discovered, no configuration needed.</p>
-      </div>
-      <div class="feature">
-        <h3>🔒 Bounded & Auditable</h3>
-        <p>Native metadata defines the contract. Code defines the behavior. Read one file to know exactly what an agent can do.</p>
-      </div>
-      <div class="feature">
-        <h3>🧬 Evolvable</h3>
-        <p>Agents can be generated, molted, and versioned through natural language. They evolve — the contract stays clean.</p>
-      </div>
-      <div class="feature">
-        <h3>🔗 Chainable</h3>
-        <p>Agents output data_slush — curated signals that feed into the next agent automatically. No LLM interpreter between steps.</p>
-      </div>
-    </div>
-  </section>
+load();
+</script>
 
-  <footer>
-    <p>
-      MIT License • The standard for AI agents • Built on <a href="https://github.com/kody-w/openrappter">openrappter</a>
-    </p>
-  </footer>
 </body>
 </html>
