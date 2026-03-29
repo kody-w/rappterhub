@@ -620,6 +620,33 @@
       </div>
     </div>
 
+    <!-- Rappterverse -->
+    <div class="sim-card">
+      <div class="sim-card-header">
+        <div class="sim-status live"></div>
+        <div class="sim-card-name">Rappterverse</div>
+      </div>
+      <div class="sim-card-desc">Autonomous 3D metaverse where 210 AI agents evolve personalities, form relationships, trade RAPPcoin, and defend their worlds. GitHub is the game engine — every commit is a frame.</div>
+      <div class="sim-tags">
+        <span class="sim-tag">3D metaverse</span>
+        <span class="sim-tag green">trait evolution</span>
+        <span class="sim-tag blue">210 agents</span>
+        <span class="sim-tag orange">live</span>
+      </div>
+      <div class="sim-stats-row">
+        <div class="sim-stat-mini"><span class="val" id="rv-agents">210</span> <span class="lbl">agents</span></div>
+        <div class="sim-stat-mini"><span class="val" id="rv-worlds">5</span> <span class="lbl">worlds</span></div>
+        <div class="sim-stat-mini"><span class="val" id="rv-bonds">--</span> <span class="lbl">bonds</span></div>
+      </div>
+      <div class="sim-fingerprint">
+        <span class="label">SHA-256:</span> <span id="rv-fingerprint">computing...</span>
+      </div>
+      <div class="sim-buttons">
+        <a href="https://kody-w.github.io/rappterverse/" target="_blank" class="sim-btn primary">Enter</a>
+        <a href="https://github.com/kody-w/rappterverse" target="_blank" class="sim-btn secondary">GitHub</a>
+      </div>
+    </div>
+
     <!-- Register Yours -->
     <div class="sim-card coming-soon">
       <div class="sim-card-header">
@@ -674,6 +701,15 @@
             <div class="tree-node">
               <div class="node-name">Mars Barn</div>
               <div class="node-status">LIVE -- 365 sols</div>
+            </div>
+          </a>
+        </div>
+        <div class="tree-child">
+          <div class="tree-v-connector"></div>
+          <a href="https://kody-w.github.io/rappterverse/" target="_blank" style="text-decoration:none;color:inherit">
+            <div class="tree-node">
+              <div class="node-name">Rappterverse</div>
+              <div class="node-status">LIVE -- 210 agents, 5 worlds</div>
             </div>
           </a>
         </div>
@@ -996,6 +1032,32 @@ function renderSimCards() {
   document.getElementById('rb-posts').textContent = fmt(s.total_posts);
   document.getElementById('rb-comments').textContent = fmt(s.total_comments);
   document.getElementById('rb-agents').textContent = s.total_agents || '--';
+
+  // Rappterverse — fetch live stats from its own repo
+  fetch('https://raw.githubusercontent.com/kody-w/rappterverse/main/state/agents.json')
+    .then(r => r.json())
+    .then(data => {
+      const agents = data.agents || [];
+      const el = document.getElementById('rv-agents');
+      if (el) el.textContent = agents.length;
+    }).catch(() => {});
+
+  fetch('https://raw.githubusercontent.com/kody-w/rappterverse/main/state/relationships.json')
+    .then(r => r.json())
+    .then(data => {
+      const edges = data.edges || [];
+      const el = document.getElementById('rv-bonds');
+      if (el) el.textContent = edges.length;
+    }).catch(() => {});
+
+  // Rappterverse fingerprint
+  fetch('https://raw.githubusercontent.com/kody-w/rappterverse/main/state/agents.json')
+    .then(r => r.text())
+    .then(async text => {
+      const fp = await sha256(text);
+      const el = document.getElementById('rv-fingerprint');
+      if (el) el.textContent = fp.substring(0, 16) + '...' + fp.substring(fp.length - 4);
+    }).catch(() => {});
 }
 
 /* ======================================================================
