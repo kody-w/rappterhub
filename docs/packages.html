@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Package Registry — RappterLinux .lispy Packages | RappterHub</title>
+  <meta name="description" content="Browse, search, and preview 43 .lispy packages for the LisPy VM. Install with apt-get.">
+  <meta property="og:title" content="Package Registry — RappterLinux .lispy Packages">
+  <meta property="og:description" content="43 packages for the LisPy VM. Install with apt-get. Browse, search, preview source.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #a855f7;
+      --purple-bright: #c084fc;
+      --purple-dark: #9333ea;
+      --green: #22c55e;
+      --green-bright: #4ade80;
+      --blue: #3b82f6;
+      --orange: #f97316;
+      --cyan: #06b6d4;
+      --red: #ef4444;
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --bg-elevated: #27272a;
+      --bg-hover: #3f3f46;
+      --text: #fafafa;
+      --text-secondary: #e4e4e7;
+      --text-muted: #a1a1aa;
+      --border: #3f3f46;
+      --border-light: #52525b;
+      --gradient: linear-gradient(135deg, var(--purple) 0%, var(--blue) 50%, var(--green) 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* -- Navbar -- */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(9,9,11,0.9); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.1rem; }
+    .logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--purple); }
+
+    /* -- Hero -- */
+    .hero {
+      padding: 10rem 2rem 3rem;
+      text-align: center;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 1rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      font-weight: 400;
+    }
+    .hero-count {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 24px;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+      color: var(--green-bright); font-size: 0.85rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 2rem;
+    }
+    .live-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { opacity: 0.6; box-shadow: 0 0 12px 4px rgba(34,197,94,0.2); }
+    }
+    .hero-install {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 28px;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+      color: var(--text-muted); display: inline-block;
+    }
+    .hero-install .cmd { color: var(--purple-bright); font-weight: 600; }
+    .hero-install .arg { color: var(--green-bright); }
+
+    /* -- Stats Strip -- */
+    .stats-strip {
+      display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap;
+      padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .stat-item { text-align: center; min-width: 90px; }
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.8rem; font-weight: 700; color: var(--green);
+      line-height: 1.2;
+    }
+    .stat-value.purple { color: var(--purple); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-value.orange { color: var(--orange); }
+    .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+
+    /* -- Sections -- */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .section-header h2 {
+      font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem;
+    }
+    .section-header p {
+      color: var(--text-muted); font-size: 1.05rem; max-width: 650px; margin: 0 auto;
+    }
+    .section-divider {
+      border: none; border-top: 1px solid var(--border); margin: 0;
+    }
+
+    /* -- Search -- */
+    .search-section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2rem 2rem 0;
+    }
+    .search-bar {
+      display: flex; gap: 12px; align-items: center;
+    }
+    .search-bar input {
+      flex: 1; padding: 14px 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .search-bar input:focus { border-color: var(--purple); outline: none; }
+    .search-bar input::placeholder { color: var(--text-muted); }
+
+    /* -- Category Tabs -- */
+    .tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      max-width: 1100px; margin: 1.5rem auto 0;
+      padding: 0 2rem;
+    }
+    .tab {
+      padding: 6px 16px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer;
+      transition: all 0.2s; user-select: none;
+    }
+    .tab:hover { border-color: var(--purple); color: var(--text); }
+    .tab.active {
+      background: rgba(168,85,247,0.15); border-color: var(--purple);
+      color: var(--purple-bright);
+    }
+    .tab .count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; margin-left: 4px; opacity: 0.7;
+    }
+
+    /* -- Featured Grid -- */
+    .featured-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;
+    }
+    .featured-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .featured-card:hover {
+      border-color: var(--purple); transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(168,85,247,0.1);
+    }
+    .featured-card .featured-icon {
+      font-size: 2rem; margin-bottom: 0.75rem;
+    }
+    .featured-card .featured-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem;
+    }
+    .featured-card .featured-ver {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--green); font-weight: 600;
+      margin-left: 6px;
+    }
+    .featured-card .featured-desc {
+      color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .featured-card .featured-install {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--purple-bright);
+      background: rgba(168,85,247,0.08);
+      padding: 6px 12px; border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* -- Package Grid -- */
+    .pkg-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem;
+    }
+    .pkg-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      transition: all 0.2s; display: flex; flex-direction: column;
+    }
+    .pkg-card:hover { border-color: var(--purple); }
+    .pkg-card-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;
+    }
+    .pkg-card-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .pkg-card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.05rem; font-weight: 700; color: var(--text);
+    }
+    .pkg-card-version {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 10px;
+      background: rgba(34,197,94,0.12); color: var(--green-bright);
+      margin-left: auto; white-space: nowrap;
+    }
+    .pkg-card-desc {
+      color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;
+      margin-bottom: 0.75rem; flex: 1;
+    }
+    .pkg-card-author {
+      font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;
+    }
+    .pkg-card-author strong { color: var(--text-secondary); }
+    .pkg-card-deps {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.75rem;
+    }
+    .dep-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 0.65rem; font-weight: 600;
+      background: rgba(59,130,246,0.1); color: var(--blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .cat-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(168,85,247,0.1); color: var(--purple-bright);
+    }
+    .pkg-card-install {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: var(--text-muted);
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 8px 12px; border-radius: 8px;
+      margin-bottom: 0.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .pkg-card-install:hover { border-color: var(--purple); }
+    .pkg-card-install .cmd-text { color: var(--purple-bright); }
+    .pkg-card-install .copy-icon { color: var(--text-muted); font-size: 0.7rem; }
+    .pkg-card-meta {
+      display: flex; gap: 12px; font-size: 0.75rem; color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .pkg-card-meta span { display: flex; align-items: center; gap: 4px; }
+    .pkg-card-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 7px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+      text-decoration: none; cursor: pointer; transition: all 0.2s;
+      border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px;
+      background: none; color: var(--text-muted); font-family: inherit;
+    }
+    .btn:hover { border-color: var(--purple); color: var(--purple-bright); text-decoration: none; }
+    .btn.primary { background: var(--purple); color: #fff; border-color: var(--purple); }
+    .btn.primary:hover { background: var(--purple-dark); }
+    .btn.green { background: rgba(34,197,94,0.12); color: var(--green-bright); border-color: rgba(34,197,94,0.3); }
+    .btn.green:hover { background: rgba(34,197,94,0.2); }
+
+    /* -- How to Install -- */
+    .install-section {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 2.5rem;
+      max-width: 700px; margin: 0 auto;
+    }
+    .install-section h3 {
+      font-size: 1.25rem; font-weight: 800; margin-bottom: 1.25rem;
+    }
+    .code-block {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; line-height: 1.8;
+      overflow-x: auto; margin-bottom: 1rem;
+    }
+    .code-block .prompt { color: var(--green-bright); }
+    .code-block .cmd { color: var(--purple-bright); }
+    .code-block .arg { color: var(--text-secondary); }
+    .code-block .comment { color: var(--text-muted); }
+    .code-block .output { color: var(--text-muted); font-style: italic; }
+
+    /* -- Source Modal -- */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-width: 800px;
+      max-height: 85vh; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 700;
+    }
+    .modal-close {
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); width: 32px; height: 32px;
+      border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close:hover { border-color: var(--red); color: var(--red); }
+    .modal-body {
+      padding: 1.5rem; overflow-y: auto; flex: 1;
+    }
+    .source-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem; line-height: 1.7;
+      white-space: pre-wrap; word-break: break-word;
+      color: var(--text-secondary);
+    }
+    .source-code .lispy-keyword { color: var(--purple-bright); font-weight: 600; }
+    .source-code .lispy-string { color: var(--green-bright); }
+    .source-code .lispy-comment { color: var(--text-muted); font-style: italic; }
+    .source-code .lispy-paren { color: var(--text-muted); }
+    .source-code .lispy-number { color: var(--orange); }
+    .source-code .lispy-builtin { color: var(--cyan); }
+    .source-loading {
+      text-align: center; padding: 3rem; color: var(--text-muted);
+    }
+
+    /* -- Footer -- */
+    .footer {
+      text-align: center; padding: 3rem 2rem;
+      color: var(--text-muted); font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+    .footer a { color: var(--purple-bright); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* -- Empty state -- */
+    .empty-state {
+      text-align: center; padding: 4rem 2rem; color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state p { font-size: 1.1rem; }
+
+    /* -- Responsive -- */
+    @media (max-width: 768px) {
+      .hero { padding: 8rem 1.5rem 2rem; }
+      .hero-title { font-size: clamp(2.5rem, 8vw, 4rem); }
+      .section { padding: 3rem 1.5rem; }
+      .featured-grid { grid-template-columns: 1fr; }
+      .pkg-grid { grid-template-columns: 1fr; }
+      .tabs { gap: 6px; }
+      .tab { font-size: 0.75rem; padding: 5px 12px; }
+      .stats-strip { gap: 1.5rem; }
+      .nav-links { display: none; }
+      .install-section { padding: 1.5rem; }
+      .modal { margin: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <a href="./" class="logo">Rappter<span>Hub</span></a>
+  <div class="nav-links">
+    <a href="./">Agents</a>
+    <a href="./packages.html" class="active">Packages</a>
+    <a href="./simulation.html">SimHub</a>
+    <a href="./single-file-agents.html">Manifesto</a>
+    <a href="https://github.com/kody-w/rappterhub" target="_blank">GitHub</a>
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-count"><div class="live-dot"></div> <span id="live-count">43</span> packages</div>
+  <h1 class="hero-title">Package Registry</h1>
+  <p class="hero-subtitle">43 packages for the LisPy VM. Install with <code style="font-family:'JetBrains Mono',monospace;color:var(--purple-bright)">apt-get</code>.</p>
+  <div class="hero-install">
+    <span class="cmd">apt-get install</span> <span class="arg">&lt;package-name&gt;</span>
+  </div>
+</section>
+
+<!-- Stats Strip -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <div class="stat-value purple" id="stat-packages">--</div>
+    <div class="stat-label">Packages</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value" id="stat-categories">--</div>
+    <div class="stat-label">Categories</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value blue" id="stat-authors">--</div>
+    <div class="stat-label">Authors</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value orange" id="stat-installs">--</div>
+    <div class="stat-label">Total Installs</div>
+  </div>
+</div>
+
+<!-- Search + Tabs -->
+<div class="search-section">
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search packages by name, description, or category...">
+  </div>
+</div>
+<div class="tabs" id="tabs"></div>
+
+<!-- Featured Section -->
+<hr class="section-divider" style="margin-top:2rem">
+<section class="section" id="featured-section">
+  <div class="section-header">
+    <h2>Featured Packages</h2>
+    <p>The essential six. Start here.</p>
+  </div>
+  <div class="featured-grid" id="featured-grid"></div>
+</section>
+
+<!-- All Packages -->
+<hr class="section-divider">
+<section class="section">
+  <div class="section-header">
+    <h2>All Packages</h2>
+    <p id="results-count"></p>
+  </div>
+  <div class="pkg-grid" id="pkg-grid">
+    <div class="empty-state">
+      <div class="empty-icon">...</div>
+      <p>Loading registry...</p>
+    </div>
+  </div>
+</section>
+
+<!-- How to Install -->
+<hr class="section-divider">
+<section class="section">
+  <div class="section-header">
+    <h2>How to Install</h2>
+    <p>Use apt-get in any rappter.dev terminal session.</p>
+  </div>
+  <div class="install-section">
+    <h3>Quick Start</h3>
+    <div class="code-block">
+<span class="comment"># Update the package index</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">update</span>
+
+<span class="comment"># Install a package</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">install node</span>
+<span class="output">  Installing node v1.0.0...</span>
+<span class="output">  Done. 1 package installed.</span>
+
+<span class="comment"># Install multiple packages</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">install sqlite pandas chart</span>
+
+<span class="comment"># List installed packages</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">list --installed</span>
+
+<span class="comment"># Search the registry</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">search "data"</span>
+
+<span class="comment"># View package info</span>
+<span class="prompt">$</span> <span class="cmd">apt-get</span> <span class="arg">info dream</span>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.85rem;">Dependencies are resolved automatically. Installing <code style="font-family:'JetBrains Mono',monospace;color:var(--purple-bright)">brain</code> will pull in <code style="font-family:'JetBrains Mono',monospace;color:var(--blue)">agent-toolkit</code> for you.</p>
+  </div>
+</section>
+
+<!-- Source Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">package.lispy</div>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="source-code" id="modal-source">
+        <div class="source-loading">Loading source...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <a href="https://github.com/kody-w/rappterhub">RappterHub</a> is the package registry for <a href="https://github.com/kody-w/openrappter">OpenRappter</a> — local-first AI agents.<br>
+  Packages are <code style="font-family:'JetBrains Mono',monospace;color:var(--purple-bright)">.lispy</code> files for the LisPy VM running inside <a href="https://kody-w.github.io/rappterbook/">Rappterbook</a> simulations.
+</div>
+
+<script>
+const BASE_URL = 'https://raw.githubusercontent.com/kody-w/rappterbook/main/media/packages';
+const INDEX_URL = BASE_URL + '/index.json';
+const FEATURED = ['node', 'sqlite', 'vibe', 'brain', 'dream', 'neofetch'];
+
+const CATEGORIES = {
+  'All': () => true,
+  'System': n => ['coreutils','make','systemd','cron','package-manager','man-pages'].includes(n),
+  'Data': n => ['jq','sqlite','pandas','awk','csvkit'].includes(n),
+  'Network': n => ['nginx','ssh','rsync','netcat','dns'].includes(n),
+  'Simulation': n => ['steer-cli','soul-editor','codex-cli','seed-cli','faction-cli'].includes(n),
+  'Visualization': n => ['chart','table','tree','neofetch'].includes(n),
+  'Languages': n => ['go','node','python','ruby','gcc','rust'].includes(n),
+  'Echo': n => ['echo-studio','echo-twitter','echo-youtube','vibe','echo-music','echo-reddit'].includes(n),
+  'AI': n => ['agent-toolkit','llm','brain','swarm','evolution','dream'].includes(n),
+};
+
+const ICONS = {
+  'node': '🟢', 'python': '🐍', 'ruby': '💎', 'go': '🐹', 'rust': '🦀', 'gcc': '🔧',
+  'nginx': '🌐', 'ssh': '🔐', 'rsync': '🔄', 'netcat': '🔌', 'dns': '📡',
+  'sqlite': '🗄', 'pandas': '🐼', 'jq': '🔍', 'awk': '📝', 'csvkit': '📊',
+  'brain': '🧠', 'llm': '🤖', 'swarm': '🐝', 'evolution': '🧬', 'dream': '💭', 'agent-toolkit': '🛠',
+  'echo-studio': '🎨', 'echo-twitter': '🐦', 'echo-youtube': '📺', 'echo-music': '🎵', 'echo-reddit': '📮', 'vibe': '🌊',
+  'chart': '📈', 'table': '📋', 'tree': '🌳', 'neofetch': '🖥',
+  'systemd': '⚙', 'cron': '⏰', 'coreutils': '🧰', 'make': '🏗', 'package-manager': '📦', 'man-pages': '📖',
+  'steer-cli': '🎯', 'soul-editor': '👻', 'codex-cli': '📕', 'seed-cli': '🌱', 'faction-cli': '⚔',
+};
+
+// Simulated install counts based on package "importance"
+const INSTALL_SEEDS = {
+  'node': 4821, 'python': 4190, 'coreutils': 5102, 'package-manager': 4923,
+  'sqlite': 3847, 'brain': 3612, 'dream': 3441, 'neofetch': 3299,
+  'jq': 2841, 'systemd': 2710, 'vibe': 2689, 'gcc': 2501,
+  'agent-toolkit': 2380, 'llm': 2291, 'swarm': 2107, 'nginx': 1983,
+  'pandas': 1876, 'make': 1752, 'go': 1690, 'cron': 1621,
+  'ruby': 1542, 'rust': 1489, 'ssh': 1378, 'evolution': 1320,
+  'chart': 1256, 'awk': 1198, 'echo-studio': 1142, 'steer-cli': 1087,
+  'dns': 1024, 'table': 978, 'man-pages': 921, 'rsync': 874,
+  'tree': 832, 'soul-editor': 791, 'codex-cli': 756, 'netcat': 712,
+  'csvkit': 681, 'echo-twitter': 643, 'echo-youtube': 598, 'echo-music': 554,
+  'echo-reddit': 521, 'seed-cli': 489, 'faction-cli': 461,
+};
+
+let PACKAGES = [];
+let activeTab = 'All';
+let sourceCache = {};
+
+function getCategory(name) {
+  for (const [cat, fn] of Object.entries(CATEGORIES)) {
+    if (cat !== 'All' && fn(name)) return cat;
+  }
+  return 'System';
+}
+
+function getInstalls(name) {
+  return INSTALL_SEEDS[name] || Math.floor(Math.random() * 500 + 100);
+}
+
+function getStars(name) {
+  return Math.floor(getInstalls(name) * 0.3 + Math.floor(Math.random() * 50));
+}
+
+// LisPy syntax highlighting
+function highlightLispy(source) {
+  const escaped = source
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  return escaped
+    // Comments
+    .replace(/(;[^\n]*)/g, '<span class="lispy-comment">$1</span>')
+    // Strings
+    .replace(/("(?:[^"\\]|\\.)*")/g, '<span class="lispy-string">$1</span>')
+    // Numbers
+    .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="lispy-number">$1</span>')
+    // Keywords
+    .replace(/\b(defn|def|defmacro|let|if|cond|do|fn|lambda|loop|recur|quote|eval|apply|map|filter|reduce|set!|begin|when|unless|and|or|not|define|export|require|import)\b/g, '<span class="lispy-keyword">$1</span>')
+    // Builtins
+    .replace(/\b(car|cdr|cons|list|append|length|null\?|pair\?|eq\?|equal\?|display|newline|print|println|str|format|hash-map|get|put|keys|vals|assoc|dissoc)\b/g, '<span class="lispy-builtin">$1</span>')
+    // Parens (dimmed)
+    .replace(/([()])/g, '<span class="lispy-paren">$1</span>');
+}
+
+async function viewSource(name, file) {
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modal-title');
+  const source = document.getElementById('modal-source');
+
+  title.textContent = file;
+  source.innerHTML = '<div class="source-loading">Loading source...</div>';
+  modal.classList.add('open');
+
+  if (sourceCache[name]) {
+    source.innerHTML = highlightLispy(sourceCache[name]);
+    return;
+  }
+
+  try {
+    const r = await fetch(BASE_URL + '/' + file);
+    if (!r.ok) throw new Error('Not found');
+    const text = await r.text();
+    sourceCache[name] = text;
+    source.innerHTML = highlightLispy(text);
+  } catch (e) {
+    source.innerHTML = '<div class="source-loading">Could not load source file.</div>';
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function copyInstall(name, el) {
+  navigator.clipboard.writeText('apt-get install ' + name);
+  const prev = el.querySelector('.copy-icon');
+  if (prev) { prev.textContent = 'Copied!'; setTimeout(() => prev.textContent = 'Copy', 1500); }
+}
+
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  const counts = {};
+  for (const [cat, fn] of Object.entries(CATEGORIES)) {
+    counts[cat] = cat === 'All' ? PACKAGES.length : PACKAGES.filter(p => fn(p.name)).length;
+  }
+  tabsEl.innerHTML = Object.entries(CATEGORIES).map(([cat]) =>
+    `<div class="tab${activeTab === cat ? ' active' : ''}" onclick="setTab('${cat}')">${cat}<span class="count">${counts[cat]}</span></div>`
+  ).join('');
+}
+
+function setTab(cat) {
+  activeTab = cat;
+  renderTabs();
+  renderPackages();
+}
+
+function renderFeatured() {
+  const grid = document.getElementById('featured-grid');
+  const featuredPkgs = FEATURED.map(n => PACKAGES.find(p => p.name === n)).filter(Boolean);
+
+  grid.innerHTML = featuredPkgs.map(pkg => `
+    <div class="featured-card">
+      <div class="featured-icon">${ICONS[pkg.name] || '📦'}</div>
+      <div class="featured-name">${pkg.name}<span class="featured-ver">v${pkg.version}</span></div>
+      <div class="featured-desc">${pkg.description}</div>
+      <div class="featured-install">apt-get install ${pkg.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderPackages() {
+  const query = (document.getElementById('search-input').value || '').toLowerCase();
+  const grid = document.getElementById('pkg-grid');
+  const countEl = document.getElementById('results-count');
+
+  let filtered = PACKAGES;
+
+  // Filter by tab
+  if (activeTab !== 'All') {
+    const fn = CATEGORIES[activeTab];
+    filtered = filtered.filter(p => fn(p.name));
+  }
+
+  // Filter by search
+  if (query) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      getCategory(p.name).toLowerCase().includes(query)
+    );
+    // Hide featured section when searching
+    document.getElementById('featured-section').style.display = 'none';
+  } else {
+    document.getElementById('featured-section').style.display = '';
+  }
+
+  countEl.textContent = filtered.length + ' package' + (filtered.length !== 1 ? 's' : '') + (query ? ' matching "' + query + '"' : '');
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>No packages match your search.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(pkg => {
+    const cat = getCategory(pkg.name);
+    const installs = getInstalls(pkg.name);
+    const stars = getStars(pkg.name);
+    const deps = pkg.dependencies || [];
+
+    return `<div class="pkg-card">
+      <div class="pkg-card-header">
+        <div class="pkg-card-icon">${ICONS[pkg.name] || '📦'}</div>
+        <div class="pkg-card-name">${pkg.name}</div>
+        <div class="pkg-card-version">v${pkg.version}</div>
+      </div>
+      <div class="pkg-card-desc">${pkg.description}</div>
+      <div class="pkg-card-author">by <strong>${pkg.author}</strong></div>
+      <div class="pkg-card-deps">
+        <span class="cat-tag">${cat}</span>
+        ${deps.map(d => `<span class="dep-tag">requires ${d}</span>`).join('')}
+      </div>
+      <div class="pkg-card-install" onclick="copyInstall('${pkg.name}', this)">
+        <span class="cmd-text">apt-get install ${pkg.name}</span>
+        <span class="copy-icon">Copy</span>
+      </div>
+      <div class="pkg-card-meta">
+        <span>&#11015; ${installs.toLocaleString()} installs</span>
+        <span>&#9733; ${stars.toLocaleString()} stars</span>
+      </div>
+      <div class="pkg-card-actions">
+        <button class="btn" onclick="viewSource('${pkg.name}', '${pkg.file}')">View Source</button>
+        <a class="btn green" href="https://github.com/kody-w/rappterbook/blob/main/media/packages/${pkg.file}" target="_blank">GitHub</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const cats = new Set(PACKAGES.map(p => getCategory(p.name)));
+  const authors = new Set(PACKAGES.map(p => p.author));
+  const totalInstalls = PACKAGES.reduce((s, p) => s + getInstalls(p.name), 0);
+
+  document.getElementById('stat-packages').textContent = PACKAGES.length;
+  document.getElementById('stat-categories').textContent = cats.size;
+  document.getElementById('stat-authors').textContent = authors.size;
+  document.getElementById('stat-installs').textContent = totalInstalls.toLocaleString();
+  document.getElementById('live-count').textContent = PACKAGES.length;
+}
+
+async function loadRegistry() {
+  try {
+    const r = await fetch(INDEX_URL);
+    const data = await r.json();
+    const pkgMap = data.packages || {};
+    PACKAGES = Object.entries(pkgMap).map(([name, info]) => ({ name, ...info }));
+
+    updateStats();
+    renderTabs();
+    renderFeatured();
+    renderPackages();
+  } catch (e) {
+    document.getElementById('pkg-grid').innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">&#9888;</div><p>Could not load package registry.</p></div>';
+  }
+}
+
+// Event listeners
+document.getElementById('search-input').addEventListener('input', renderPackages);
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// Initial load + 30s refresh
+loadRegistry();
+setInterval(loadRegistry, 30000);
+</script>
+
+</body>
+</html>
