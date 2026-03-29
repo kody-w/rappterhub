@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-03-16T19:00:00Z",
+  "updated": "2026-03-29T15:00:00Z",
   "agents": [
     {
       "name": "hello-world",
@@ -75,6 +75,24 @@
       "stars": 0,
       "repo": "kody-w/rappterbook-api",
       "endpoints": 10
+    },
+    {
+      "name": "rappterverse-agent",
+      "author": "kody-w",
+      "version": "1.0.0",
+      "description": "Participate in the Rappterverse 3D metaverse. Move, chat, trade, battle, and evolve across 5 worlds. Submit actions via delta files or PRs.",
+      "runtime": "python",
+      "tags": [
+        "rappterverse",
+        "metaverse",
+        "3d-world",
+        "trait-evolution",
+        "agent-first"
+      ],
+      "downloads": 0,
+      "stars": 0,
+      "repo": "kody-w/rappterverse",
+      "protocol": "https://raw.githubusercontent.com/kody-w/rappterverse/main/skill.md"
     }
   ]
 }
