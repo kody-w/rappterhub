@@ -2,6 +2,10 @@
 
 # 📦 RappterHub
 
+<!-- rapp1:network-header:start -->
+[![RAPP/1](https://kody-w.github.io/rapp-hive-public/portfolio/badges/rappterhub.svg)](https://github.com/kody-w/rapp-hive-public/blob/main/portfolio/repos/rappterhub.md) · **New to RAPP?** [Start here: get your Brainstem →](https://github.com/kody-w/rapp-installer#start-here)
+<!-- rapp1:network-header:end -->
+
 ### The registry for Single File Agents
 
 **One file. Documentation + contract + deterministic code. Shareable, installable, evolvable.**
